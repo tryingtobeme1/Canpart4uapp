@@ -10,8 +10,10 @@ from selenium.webdriver.support import expected_conditions as EC
 import json
 from datetime import datetime
 from webdriver_manager.chrome import ChromeDriverManager
-from flask import Flask, render_template_string, jsonify, request
+from flask import Flask, render_template_string, jsonify, request, Response
 from flask_cors import CORS
+import threading
+import queue
 import re
 from collections import Counter
 
@@ -136,7 +138,10 @@ class KennyUPullScraper:
                     try:
                         date_listed = parent_element.find_element(By.CLASS_NAME, "infos--date").text
                     except:
-                        date_listed = "N/A"
+                        try:
+                            date_listed = parent_element.find_elements(By.CLASS_NAME, "info")[-1].text
+                        except:
+                            date_listed = "N/A"
 
                     try:
                         row_info = parent_element.find_element(By.XPATH, ".//p[@class='date info']").text
@@ -248,13 +253,90 @@ def home():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Kenny U-Pull Inventory Scraper</title>
-        <!-- Include CSS styles here -->
+        <style>
+            /* CSS styles for the page */
+            body { 
+                font-family: Arial, sans-serif; 
+                max-width: 1200px; 
+                margin: 0 auto; 
+                padding: 20px;
+                background-color: #f0f2f5;
+            }
+            .container { 
+                background: white; 
+                padding: 20px; 
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .locations, .filter {
+                margin-bottom: 20px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            button {
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            #status {
+                margin-top: 20px;
+                padding: 10px;
+                background-color: #e9ecef;
+                border-radius: 4px;
+            }
+            .card {
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 15px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                transition: transform 0.2s;
+            }
+            .card:hover {
+                transform: translateY(-5px);
+            }
+            .card img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 4px;
+            }
+        </style>
     </head>
     <body>
-        <div>
+        <div class="container">
             <h1>Kenny U-Pull Inventory Scraper</h1>
-            <!-- Include the buttons, filters, and other HTML content -->
+            <div class="filter">
+                <label for="make">Make:</label>
+                <input type="text" id="make" name="make">
+                <label for="model">Model:</label>
+                <input type="text" id="model" name="model">
+                <label for="year">Year:</label>
+                <input type="text" id="year" name="year">
+                <label for="min_price">Min Price:</label>
+                <input type="text" id="min_price" name="min_price">
+                <label for="max_price">Max Price:</label>
+                <input type="text" id="max_price" name="max_price">
+                <button onclick="startScrapingWithFilters()">Scrape with Filters</button>
+            </div>
+            <div class="locations">
+                <button onclick="startScraping('Ottawa')" id="btn-ottawa">Scrape Ottawa</button>
+                <button onclick="startScraping('Gatineau')" id="btn-gatineau">Scrape Gatineau</button>
+                <button onclick="startScraping('Cornwall')" id="btn-cornwall">Scrape Cornwall</button>
+                <button onclick="startScraping('all')" id="btn-all">Scrape All Locations</button>
+            </div>
+            <div id="status"></div>
+            <div id="results"></div>
         </div>
+        
+        <script>
+            // JavaScript for handling scrape requests and UI updates
+        </script>
     </body>
     </html>
     """
