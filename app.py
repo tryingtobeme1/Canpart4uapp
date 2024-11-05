@@ -3,11 +3,13 @@ import time
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import json
 from datetime import datetime
+from webdriver_manager.chrome import ChromeDriverManager
 from flask import Flask, render_template_string, jsonify, request
 from flask_cors import CORS
 import re
@@ -18,30 +20,18 @@ def print_status(message):
     print(f"[STATUS] {message}")
 
 class BrowserHandler:
-    """
-    Class to handle Chrome browser setup and teardown to reduce duplication.
-    """
     def __init__(self, headless=True):
         chrome_options = Options()
         if headless:
-            chrome_options.add_argument("--headless")  # Run in headless mode
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--remote-debugging-port=9222")  # Required for Render
+            chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--start-maximized")
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option("useAutomationExtension", False)
-        
-        # Render specific paths for Chrome binary and driver
-        chrome_bin_path = "/usr/bin/google-chrome"
-        chrome_driver_path = "/usr/local/bin/chromedriver"
-        
-        chrome_options.binary_location = chrome_bin_path
-        
+
         try:
             self.driver = webdriver.Chrome(
-                executable_path=chrome_driver_path,
+                service=Service(ChromeDriverManager().install()),
                 options=chrome_options
             )
             print_status("Browser initialized successfully.")
@@ -258,17 +248,17 @@ def home():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Kenny U-Pull Inventory Scraper</title>
-        <style>
-            /* Style definitions */
-        </style>
+        <!-- Include CSS styles here -->
     </head>
     <body>
-        <h1>Welcome to the Kenny U-Pull Inventory Scraper</h1>
-        <!-- Additional HTML content -->
+        <div>
+            <h1>Kenny U-Pull Inventory Scraper</h1>
+            <!-- Include the buttons, filters, and other HTML content -->
+        </div>
     </body>
     </html>
     """
-    return render_template_string(html)  # Ensure the response is returned
+    return render_template_string(html)
 
 @app.route('/scrape/<location>')
 def scrape(location):
@@ -310,5 +300,4 @@ def scrape_ebay_with_filters():
         scraper.close()
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8080))  # Use 8080 as the default port
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(debug=True)
