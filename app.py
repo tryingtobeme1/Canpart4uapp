@@ -8,10 +8,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import json
 from datetime import datetime
-from flask import Flask, render_template_string, jsonify, request, Response
+from flask import Flask, render_template_string, jsonify, request
 from flask_cors import CORS
-import threading
-import queue
 import re
 from collections import Counter
 
@@ -260,7 +258,9 @@ def home():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Kenny U-Pull Inventory Scraper</title>
-        <!-- Styles and other HTML content as needed -->
+        <style>
+            /* Style definitions */
+        </style>
     </head>
     <body>
         <h1>Welcome to the Kenny U-Pull Inventory Scraper</h1>
